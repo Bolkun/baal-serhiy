@@ -2,7 +2,7 @@ import argparse
 from pprint import pprint
 import random
 from copy import deepcopy
-from zipfile import _ReadWriteBinaryMode
+#from zipfile import _ReadWriteBinaryMode
 
 import torch
 import torch.backends
