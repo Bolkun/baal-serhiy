@@ -17,6 +17,7 @@ create_new_environment() {
   # experiments
   pip install tqdm 
   pip install baal
+  pip install tensorboard
 }
 
 remove_new_environment(){
