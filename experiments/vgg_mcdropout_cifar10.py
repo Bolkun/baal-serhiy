@@ -1,8 +1,7 @@
 import argparse
-from pprint import pprint
+#from pprint import pprint
 import random
 from copy import deepcopy
-#from zipfile import _ReadWriteBinaryMode
 
 import torch
 import torch.backends
@@ -14,7 +13,6 @@ from torchvision.models import vgg16
 from torchvision.transforms import transforms
 from tqdm import tqdm
 
-
 from baal.active import get_heuristic, ActiveLearningDataset
 from baal.active.active_loop import ActiveLearningLoop
 from baal.bayesian.dropout import patch_module
@@ -23,6 +21,7 @@ from baal.modelwrapper import ModelWrapper
 """
 Minimal example to use BaaL.
 """
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
