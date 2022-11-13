@@ -18,13 +18,17 @@ module load modenv/hiera CUDA/11.3.1 GCC/11.2.0 Python/3.9.6
 
 source lib.sh
 
-#remove_new_environment pyjob_baal
+remove_new_environment pyjob_baal
 create_or_reuse_environment
 
 # experiments
 echo "Experiments"
 cd /home/sebo742e/baal-serhiy/experiments
+
 echo "Start"
 # Example to use only cifar10 original data
-python vgg_mcdropout_cifar10_original.py --epoch 100
-#python vgg_mcdropout_cifar10.py --epoch 1
+#python vgg_mcdropout_cifar10_original.py --epoch 100
+# Example to use cifar10 original + augmented data
+#python vgg_mcdropout_cifar10_augment.py --epoch 100
+# Example to use only cifar10 original + augmented data
+python vgg_mcdropout_cifar10_org+aug.py --epoch 1
