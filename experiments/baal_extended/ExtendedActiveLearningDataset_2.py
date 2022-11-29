@@ -124,10 +124,10 @@ class ExtendedActiveLearningDataset(ActiveLearningDataset):
         NOTE: this function is currently bugged, in it's current way it is supposed to work with list that contain only a single element, the function will need to be rewritten for multiple elements
         """
         # print("idx"+str(idx)+" augMapVal:"+str(self.augmented_map[idx])+" "+"augMapType:"+str(type(self.augmented_map[idx])))
-        if not (isinstance(idx, int) or isinstance(idx, np.int64)):
+        if not (isinstance(idx, int) or isinstance(idx, np.int64) or isinstance(idx, np.int32)):
             # print(type(idx))
             # We were provided only the index, we make a list.
-            idx = idx[0]
+            idx = int(idx[0])
         if self.augmented_map[idx] == 0:
             return False
         else:
@@ -150,7 +150,7 @@ class ExtendedActiveLearningDataset(ActiveLearningDataset):
         # print("oracle id list:" + str(oracle_id_list))
         i += 1
         for oracle_idx in oracle_id_list:
-            # print("oracle idx:" + str(oracle_idx))
+            #print("oracle idx:" + str(oracle_idx))
             if self.is_augmentation(oracle_idx):
                 self.n_augmented_images_labelled += 1
                 oracle_idx = self.augmented_map[oracle_idx]
@@ -176,7 +176,7 @@ class ExtendedActiveLearningDataset(ActiveLearningDataset):
                 # print(str(i) + ": " + str(self.n_labelled))
                 i += 1
             # print("augmenting source image" + str(oracle_idx))
-            super().label(oracle_idx)
+            super().label(int(oracle_idx))
             # print(str(i) + ": " + str(self.n_labelled))
             i += 1
 

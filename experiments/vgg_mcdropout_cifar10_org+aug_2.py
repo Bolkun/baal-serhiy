@@ -1,3 +1,5 @@
+import pickle
+import os
 import argparse
 from pprint import pprint
 import random
@@ -27,21 +29,24 @@ from baal_extended.ExtendedActiveLearningDataset_2 import ExtendedActiveLearning
 
 """
 Minimal example to use BaaL.
+# pip install baal
+# python vgg_mcdropout_cifar10_org+aug_2.py
 """
 
+pjoin = os.path.join
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epoch", default=100, type=int)
+    parser.add_argument("--epoch", default=1, type=int)
     parser.add_argument("--batch_size", default=32, type=int)
-    parser.add_argument("--initial_pool", default=1000, type=int) # we will start training with only 1000 labeled data samples out of the 50k and
-    parser.add_argument("--query_size", default=100, type=int)    # request 100 new samples to be labeled at every cycle
+    parser.add_argument("--initial_pool", default=1000, type=int) # we will start training with only 1000(org)+1000(aug)=2000 labeled data samples out of the 50k (org) and
+    parser.add_argument("--query_size", default=100, type=int)    # request 100(org)+100(aug)=200 new samples to be labeled at every cycle
     parser.add_argument("--lr", default=0.001)
     parser.add_argument("--heuristic", default="bald", type=str)
     parser.add_argument("--iterations", default=20, type=int)     # 20 sampling for MC-Dropout to kick paths with low weights for optimization
     parser.add_argument("--shuffle_prop", default=0.05, type=float)
     parser.add_argument("--learning_epoch", default=20, type=int)
-    parser.add_argument("--augment", default=2, type=int)
+    parser.add_argument("--augment", default=1, type=int)
     return parser.parse_args()
 
 
@@ -174,6 +179,18 @@ def main():
             # save uncertainty and label map to csv
             oracle_indices = np.argsort(uncertainty)
             active_set.labelled_map
+            uncertainty_name = (
+                f"uncertainty_epoch={epoch}" f"_labelled={len(active_set)}.pkl"
+            )
+            pickle.dump(
+                {
+                    "oracle_indices": oracle_indices,
+                    "uncertainty": uncertainty,
+                    "labelled_map": active_set.labelled_map,
+                },
+                open(pjoin("uncertainties", uncertainty_name), "wb"),
+            )
+
 
         if not should_continue:
             break
@@ -204,6 +221,7 @@ def main():
         writer.add_scalar("loss/test", test_loss, epoch)
         writer.add_scalar("accuracy/train", train_accuracy, epoch)
         writer.add_scalar("accuracy/test", test_accuracy, epoch)
+        #writer.add_scalar("uncertainty", uncertainty, epoch)
     writer.close()
 
 
