@@ -108,3 +108,7 @@ venv.bak/
 
 # vscode
 .vscode/
+
+# automatic dowloaded files like cifar10
+experiments/cifar-10-batches-py
+experiments/cifar-10-python.tar.gz
