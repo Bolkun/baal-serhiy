@@ -112,3 +112,5 @@ venv.bak/
 # automatic dowloaded files like cifar10
 experiments/cifar-10-batches-py
 experiments/cifar-10-python.tar.gz
+cifar-10-batches-py
+cifar-10-python.tar.gz
