@@ -20,7 +20,7 @@ create_new_environment() {
   pip install tensorboard
 }
 
-remove_new_environment(){
+remove_new_environment() {
   SLURM_JOB_ID=$1
   COMPUTE_WS_NAME=$SLURM_JOB_ID
   deactivate
