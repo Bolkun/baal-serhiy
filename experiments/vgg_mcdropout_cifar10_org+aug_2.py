@@ -1,5 +1,6 @@
 import pickle
 import os
+import sys #sys.exit()
 import argparse
 from pprint import pprint
 import random
@@ -30,10 +31,10 @@ from baal_extended.ExtendedActiveLearningDataset_2 import ExtendedActiveLearning
 """
 Minimal example to use BaaL.
 # pip install baal
+# conda activate deepAugmentEnv
+# cd experiments
 # python vgg_mcdropout_cifar10_org+aug_2.py
 """
-
-pjoin = os.path.join
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -166,9 +167,9 @@ def main():
         metrics = model.metrics
         should_continue = active_loop.step()
 
-        # every ten epochs calculate the uncertainty (default 10)
-        #if args.epoch % 10 == 0:
-        if args.epoch % args.epoch == 0:
+        # last epoch calculate the uncertainty
+        if ((epoch+1)-args.epoch) == 0:
+            print(str(epoch) + " out of " + str(args.epoch))
             predictions = model.predict_on_dataset(
                 active_set._dataset,
                 batch_size=hyperparams["batch_size"],
@@ -179,16 +180,19 @@ def main():
             # save uncertainty and label map to csv
             oracle_indices = np.argsort(uncertainty)
             active_set.labelled_map
-            uncertainty_name = (
+            uncertainty_filename = (
                 f"uncertainty_epoch={epoch}" f"_labelled={len(active_set)}.pkl"
             )
+            uncertainty_path = os.path.join("uncertainties", uncertainty_filename)
+            uncertainty_path =  os.path.join(os.getcwd(), uncertainty_path)
+            print("Saving file " + uncertainty_path)
             pickle.dump(
                 {
                     "oracle_indices": oracle_indices,
                     "uncertainty": uncertainty,
                     "labelled_map": active_set.labelled_map,
                 },
-                open(pjoin("uncertainties", uncertainty_name), "wb"),
+                open(uncertainty_path, "wb")
             )
 
 
