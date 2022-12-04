@@ -177,14 +177,18 @@ def main():
                 use_cuda=use_cuda,
             )
             uncertainty = active_loop.heuristic.get_uncertainties(predictions)
-            # save uncertainty and label map to csv
+            # save uncertainty and label map to pkl
             oracle_indices = np.argsort(uncertainty)
             active_set.labelled_map
             uncertainty_filename = (
                 f"uncertainty_epoch={epoch}" f"_labelled={len(active_set)}.pkl"
             )
+            newPath = os.path.join(os.getcwd(), "uncertainties")
+            isExist = os.path.exists("uncertainties")
+            if not isExist:
+                os.makedirs(newPath)
             uncertainty_path = os.path.join("uncertainties", uncertainty_filename)
-            uncertainty_path =  os.path.join(os.getcwd(), uncertainty_path)
+            uncertainty_path = os.path.join(os.getcwd(), uncertainty_path)
             print("Saving file " + uncertainty_path)
             pickle.dump(
                 {
