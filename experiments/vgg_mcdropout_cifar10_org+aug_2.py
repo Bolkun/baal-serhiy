@@ -5,7 +5,9 @@ import argparse
 from pprint import pprint
 import random
 from copy import deepcopy
+from datetime import datetime
 
+import pandas as pd
 import numpy as np
 import torch
 import torch.backends
@@ -180,15 +182,18 @@ def main():
             # save uncertainty and label map to pkl
             oracle_indices = np.argsort(uncertainty)
             active_set.labelled_map
-            uncertainty_filename = (
-                f"uncertainty_epoch={epoch}" f"_labelled={len(active_set)}.pkl"
+            # current dateTime
+            now = datetime.now()
+            # convert to string
+            date_time_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+            uncertainty_filename = date_time_str + (
+                f"_uncertainty_epoch={epoch}" f"_labelled={len(active_set)}.pkl"
             )
             newPath = os.path.join(os.getcwd(), "uncertainties")
             isExist = os.path.exists("uncertainties")
             if not isExist:
                 os.makedirs(newPath)
-            uncertainty_path = os.path.join("uncertainties", uncertainty_filename)
-            uncertainty_path = os.path.join(os.getcwd(), uncertainty_path)
+            uncertainty_path = os.path.join(newPath, uncertainty_filename)
             print("Saving file " + uncertainty_path)
             pickle.dump(
                 {
@@ -198,6 +203,38 @@ def main():
                 },
                 open(uncertainty_path, "wb")
             )
+            # generate excel file
+            mypickle = pd.read_pickle(uncertainty_path)
+            excel_filename = date_time_str + (
+                f"_uncertainty_epoch={epoch}" f"_labelled={len(active_set)}.xlsx"
+            )
+            excel_path = os.path.join(newPath, excel_filename)
+
+            uncertainty = mypickle['uncertainty']
+            oracle_indices = mypickle['oracle_indices']
+            labelled_map = mypickle['labelled_map']
+
+            uncertainty_length = len(uncertainty)
+
+            original = uncertainty[0:50000-1]
+            aug1 = uncertainty[50000:100000-1]
+            aug2 = uncertainty[100000:150000-1]
+
+            if uncertainty_length == 100000:
+                matrix = np.vstack([original,aug1])
+            if uncertainty_length == 150000:    
+                matrix = np.vstack([original,aug1,aug2])
+
+            df_lab_img = pd.DataFrame(matrix)
+            df_lab_img.std()
+            df_lab_img = pd.DataFrame(np.vstack([matrix, df_lab_img.std()]))
+
+            uncertainties_std = df_lab_img.transpose()
+            if uncertainty_length == 100000:
+                uncertainties_std.columns = ['original', 'aug1', 'std']
+            if uncertainty_length == 150000:    
+                uncertainties_std.columns = ['original', 'aug1', 'aug2', 'std']
+            uncertainties_std.to_excel(excel_path)
 
 
         if not should_continue:
