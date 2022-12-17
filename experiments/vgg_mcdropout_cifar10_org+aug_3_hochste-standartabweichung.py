@@ -266,8 +266,6 @@ def main():
                 oracle_indices = mypickle['oracle_indices']
                 labelled_map = mypickle['labelled_map']
 
-                uncertainty_length = len(uncertainty)
-
                 original = uncertainty[0:50000 - 1]
                 aug1 = uncertainty[50000:100000 - 1]
                 aug2 = uncertainty[100000:150000 - 1]
