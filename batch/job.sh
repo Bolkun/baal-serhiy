@@ -18,7 +18,7 @@ module load modenv/hiera CUDA/11.7.0 GCCcore/11.3.0 Python/3.10.4
 
 source lib.sh
 
-#remove_new_environment pyjob_baal
+remove_new_environment pyjob_baal
 create_or_reuse_environment
 
 # experiments
@@ -32,5 +32,10 @@ echo "Start"
 #python vgg_mcdropout_cifar10_augment.py --epoch 100
 # Example to use only cifar10 original + augmented data
 #python vgg_mcdropout_cifar10_org+aug_1.py --epoch 100
-python vgg_mcdropout_cifar10_org+aug_2.py --epoch 1
+
+# TO TEST
+#python vgg_mcdropout_cifar10_org+aug_2.py --epoch 1
+
+# Aufgabe 4: Höchste Standardabweichung
+python vgg_mcdropout_cifar10_org+aug_3_hochste-standartabweichung.py --epoch 100
 echo "End"
