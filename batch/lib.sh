@@ -15,9 +15,11 @@ create_new_environment() {
   source $COMPUTE_WS_PATH/pyenv/bin/activate
   pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html
   # experiments
-  pip install tqdm 
+  pip install tqdm
   pip install baal
   pip install tensorboard
+  pip install pandas
+  pip install openpyxl
 }
 
 remove_new_environment() {
