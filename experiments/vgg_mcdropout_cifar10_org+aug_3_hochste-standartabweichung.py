@@ -42,16 +42,16 @@ Minimal example to use BaaL.
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epoch", default=100, type=int)
+    parser.add_argument("--epoch", default=3, type=int)
     parser.add_argument("--batch_size", default=32, type=int)
-    parser.add_argument("--initial_pool", default=1000, type=int) # 1000, we will start training with only 1000(org)+1000(aug)=2000 labeled data samples out of the 50k (org) and
-    parser.add_argument("--query_size", default=100, type=int)    # request 100(org)+100(aug)=200 new samples to be labeled at every cycle
+    parser.add_argument("--initial_pool", default=10, type=int) # 1000, we will start training with only 1000(org)+1000(aug)=2000 labeled data samples out of the 50k (org) and
+    parser.add_argument("--query_size", default=1, type=int)    # request 100(org)+100(aug)=200 new samples to be labeled at every cycle
     parser.add_argument("--lr", default=0.001)
     parser.add_argument("--heuristic", default="bald", type=str)
-    parser.add_argument("--iterations", default=20, type=int)     # 20 sampling for MC-Dropout to kick paths with low weights for optimization
+    parser.add_argument("--iterations", default=2, type=int)     # 20 sampling for MC-Dropout to kick paths with low weights for optimization
     parser.add_argument("--shuffle_prop", default=0.05, type=float)
-    parser.add_argument("--learning_epoch", default=20, type=int) # 20
-    parser.add_argument("--augment", default=2, type=int)
+    parser.add_argument("--learning_epoch", default=2, type=int) # 20
+    parser.add_argument("--augment", default=1, type=int)
     return parser.parse_args()
 
 
@@ -244,7 +244,7 @@ def main():
         pool = active_set.pool
         if len(pool) > 0:
             probs = model.predict_on_dataset(
-                active_set._dataset,
+                pool,
                 batch_size=hyperparams["batch_size"],
                 iterations=hyperparams["iterations"],
                 use_cuda=use_cuda,
@@ -266,15 +266,29 @@ def main():
                 oracle_indices = mypickle['oracle_indices']
                 labelled_map = mypickle['labelled_map']
 
-                uncertainty_length = len(uncertainty)
-
-                original = uncertainty[0:50000 - 1]
-                aug1 = uncertainty[50000:100000 - 1]
-                aug2 = uncertainty[100000:150000 - 1]
-
+                if (hyperparams["augment"] != 1) and (hyperparams["augment"] != 2):
+                    print("WARNING! Supporting only augmentation 1 and 2, for more write more code!")
+                    sys.exit()
                 if hyperparams["augment"] == 1:
+                    orig_s2 = int((len(pool)/2)-1)
+                    aug1_s1 = int(len(pool)/2)
+                    aug1_s2 = int((len(pool)/2)*2-1)
+
+                    original = uncertainty[0:orig_s2]
+                    aug1 = uncertainty[aug1_s1:aug1_s2]
+
                     matrix = np.vstack([original, aug1])
-                if hyperparams["augment"] == 2:   
+                if hyperparams["augment"] == 2: 
+                    orig_s2 = int((len(pool)/3)-1)
+                    aug1_s1 = int(len(pool)/3)
+                    aug1_s2 = int((len(pool)/3)*2-1)
+                    aug2_s1 = int((len(pool)/3)*2)
+                    aug2_s2 = int(len(pool)-1)
+
+                    original = uncertainty[0:orig_s2]
+                    aug1 = uncertainty[aug1_s1:aug1_s2]
+                    aug2 = uncertainty[aug2_s1:aug2_s2]  
+
                     matrix = np.vstack([original, aug1, aug2])
 
                 # 2. Calc standard deviation
@@ -286,14 +300,18 @@ def main():
                 
                 # 3. Map std uncertainties to uncertainty array
                 std_array = df_lab_img.std()
-                for i in range(len(uncertainty)): # 150000
-                    uncertainty[i] = std_array[i % (50000-1)]
+                if hyperparams["augment"] == 1:
+                    for i in range(len(uncertainty)):
+                        uncertainty[i] = std_array[i % (len(pool)/2-1)]
+                if hyperparams["augment"] == 2:
+                    for i in range(len(uncertainty)):
+                        uncertainty[i] = std_array[i % (len(pool)/3-1)]
                 oracle_indices = np.argsort(uncertainty)
                 active_set.labelled_map
                 # to_label -> indices sortiert von größter zu niedrigster uncertainty
                 # uncertainty -> alle std uncertainties des pools
                 to_label = heuristic.reorder_indices(uncertainty)
-                to_label = oracle_indices[np.array(to_label)] # len(to_label) = 150000
+                to_label = oracle_indices[np.array(to_label)]
                 if len(to_label) > 0:
                     active_set.label(to_label[: hyperparams.get("query_size", 1)])
                 else: break
