@@ -42,16 +42,16 @@ Minimal example to use BaaL.
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epoch", default=3, type=int)
+    parser.add_argument("--epoch", default=100, type=int)
     parser.add_argument("--batch_size", default=32, type=int)
-    parser.add_argument("--initial_pool", default=10, type=int) # 1000, we will start training with only 1000(org)+1000(aug)=2000 labeled data samples out of the 50k (org) and
-    parser.add_argument("--query_size", default=1, type=int)    # request 100(org)+100(aug)=200 new samples to be labeled at every cycle
+    parser.add_argument("--initial_pool", default=1000, type=int) # 1000, we will start training with only 1000(org)+1000(aug)=2000 labeled data samples out of the 50k (org) and
+    parser.add_argument("--query_size", default=100, type=int)    # request 100(org)+100(aug)=200 new samples to be labeled at every cycle
     parser.add_argument("--lr", default=0.001)
     parser.add_argument("--heuristic", default="bald", type=str)
-    parser.add_argument("--iterations", default=2, type=int)     # 20 sampling for MC-Dropout to kick paths with low weights for optimization
+    parser.add_argument("--iterations", default=20, type=int)     # 20 sampling for MC-Dropout to kick paths with low weights for optimization
     parser.add_argument("--shuffle_prop", default=0.05, type=float)
-    parser.add_argument("--learning_epoch", default=2, type=int) # 20
-    parser.add_argument("--augment", default=1, type=int)
+    parser.add_argument("--learning_epoch", default=20, type=int) # 20
+    parser.add_argument("--augment", default=2, type=int)
     return parser.parse_args()
 
 
@@ -257,14 +257,15 @@ def main():
                 uncertainty = active_loop.heuristic.get_uncertainties(probs)
                 oracle_indices = np.argsort(uncertainty)
                 active_set.labelled_map
+                
+                # Save pickle file for every tenth epoch
+                if (epoch+1) % 10 == 0:
+                    pickle_dir_path, pickle_file_path = generate_pickle_file(dt_string, active_set, epoch, oracle_indices, uncertainty)
+                    mypickle = pd.read_pickle(pickle_file_path)
 
-                pickle_dir_path, pickle_file_path = generate_pickle_file(dt_string, active_set, epoch, oracle_indices, uncertainty)
-
-                mypickle = pd.read_pickle(pickle_file_path)
-
-                uncertainty = mypickle['uncertainty']
-                oracle_indices = mypickle['oracle_indices']
-                labelled_map = mypickle['labelled_map']
+                    uncertainty = mypickle['uncertainty']
+                    oracle_indices = mypickle['oracle_indices']
+                    labelled_map = mypickle['labelled_map']
 
                 if (hyperparams["augment"] != 1) and (hyperparams["augment"] != 2):
                     print("WARNING! Supporting only augmentation 1 and 2, for more write more code!")
@@ -296,7 +297,9 @@ def main():
                 df_lab_img.std() # here
                 df_lab_img = pd.DataFrame(np.vstack([matrix, df_lab_img.std()]))
 
-                generate_excel_file(hyperparams["augment"], dt_string, active_set, epoch, pickle_dir_path, df_lab_img)
+                # Save excel file for every tenth epoch
+                if (epoch+1) % 10 == 0:
+                    generate_excel_file(hyperparams["augment"], dt_string, active_set, epoch, pickle_dir_path, df_lab_img)
                 
                 # 3. Map std uncertainties to uncertainty array
                 std_array = df_lab_img.std()
