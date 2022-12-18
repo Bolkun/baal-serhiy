@@ -114,3 +114,5 @@ experiments/cifar-10-batches-py
 experiments/cifar-10-python.tar.gz
 cifar-10-batches-py
 cifar-10-python.tar.gz
+experiments/vgg_mcdropout_cifar10_org+aug_2
+experiments/vgg_mcdropout_cifar10_org+aug_3
