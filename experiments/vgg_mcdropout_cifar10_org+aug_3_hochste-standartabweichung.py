@@ -7,6 +7,7 @@ import random
 from copy import deepcopy
 import csv
 import datetime
+import types
 
 import pandas as pd
 import numpy as np
@@ -207,8 +208,8 @@ def main():
 
     for epoch in tqdm(range(args.epoch)):
         # if we are in the last round we want to train for longer epochs to get a more comparable result
-        # if epoch == args.epoch:
-        #     hyperparams["learning_epoch"] = 75
+        if epoch == args.epoch:
+            hyperparams["learning_epoch"] = 75
         # Load the initial weights.
         model.load_state_dict(init_weights)
         model.train_on_dataset(
@@ -250,22 +251,15 @@ def main():
                 use_cuda=use_cuda,
             )
 
-            #if probs is not None and (isinstance(probs, types.GeneratorType) or len(probs) > 0):
-            # -> "isinstance(...) needed when using predict_..._Generator"
             if probs is not None and len(probs) > 0:
                 # 1. Get uncertainty
                 uncertainty = active_loop.heuristic.get_uncertainties(probs)
                 oracle_indices = np.argsort(uncertainty)
-                active_set.labelled_map
                 
                 # Save pickle file for every tenth epoch
                 if (epoch+1) % 10 == 0:
                     pickle_dir_path, pickle_file_path = generate_pickle_file(dt_string, active_set, epoch, oracle_indices, uncertainty)
                     mypickle = pd.read_pickle(pickle_file_path)
-
-                    uncertainty = mypickle['uncertainty']
-                    oracle_indices = mypickle['oracle_indices']
-                    labelled_map = mypickle['labelled_map']
 
                 if (hyperparams["augment"] != 1) and (hyperparams["augment"] != 2):
                     print("WARNING! Supporting only augmentation 1 and 2, for more write more code!")
@@ -289,32 +283,30 @@ def main():
                     original = uncertainty[0:orig_s2]
                     aug1 = uncertainty[aug1_s1:aug1_s2]
                     aug2 = uncertainty[aug2_s1:aug2_s2]  
+                    print("3 original length "+str(len(original)))
+                    print("4 aug1 length "+str(len(aug1)))
+                    print("5 aug2 length "+str(len(aug2)))
 
                     matrix = np.vstack([original, aug1, aug2])
 
                 # 2. Calc standard deviation
                 df_lab_img = pd.DataFrame(matrix)
-                df_lab_img.std() # here
-                df_lab_img = pd.DataFrame(np.vstack([matrix, df_lab_img.std()]))
-
+                std_array = df_lab_img.std()
+                df_lab_img = pd.DataFrame(np.vstack([matrix, std_array]))
+                
                 # Save excel file for every tenth epoch
                 if (epoch+1) % 10 == 0:
                     generate_excel_file(hyperparams["augment"], dt_string, active_set, epoch, pickle_dir_path, df_lab_img)
                 
                 # 3. Map std uncertainties to uncertainty array
-                std_array = df_lab_img.std()
                 if hyperparams["augment"] == 1:
                     for i in range(len(uncertainty)):
                         uncertainty[i] = std_array[i % (len(pool)/2-1)]
                 if hyperparams["augment"] == 2:
                     for i in range(len(uncertainty)):
                         uncertainty[i] = std_array[i % (len(pool)/3-1)]
-                oracle_indices = np.argsort(uncertainty)
-                active_set.labelled_map
-                # to_label -> indices sortiert von größter zu niedrigster uncertainty
-                # uncertainty -> alle std uncertainties des pools
-                to_label = heuristic.reorder_indices(uncertainty)
-                to_label = oracle_indices[np.array(to_label)]
+                oracle_indices = np.argsort(uncertainty) # aufsteigend
+                to_label = oracle_indices[::-1] # absteigend
                 if len(to_label) > 0:
                     active_set.label(to_label[: hyperparams.get("query_size", 1)])
                 else: break

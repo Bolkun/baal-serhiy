@@ -144,41 +144,20 @@ class ExtendedActiveLearningDataset(ActiveLearningDataset):
             ValueError if the indices do not match the values or
              if no `value` is provided and `can_label` is True.
         """
-        i = 0
         oracle_id_list = self._pool_to_oracle_index(idx)
-        # print(str(i) + ": " + str(self.n_labelled))
-        # print("oracle id list:" + str(oracle_id_list))
-        i += 1
         for oracle_idx in oracle_id_list:
-            #print("oracle idx:" + str(oracle_idx))
             if self.is_augmentation(oracle_idx):
                 self.n_augmented_images_labelled += 1
                 oracle_idx = self.augmented_map[oracle_idx]
             else:
                 self.n_unaugmented_images_labelled += 1
-            # print("oracle idx:" + str(oracle_idx))
             augmented_ids = self.get_augmented_ids_of_image(oracle_idx)
-            # print("augmented_ids" + str(augmented_ids))
-            # print("len aug ids" + str(len(augmented_ids)))
 
             for id in augmented_ids:
                 if len(id) == 0:
                     break
-                # print("id is" + str(id))
-                # print("type of id is" + str(type(id)))
-                # if not (isinstance(id, int) or isinstance(id, np.int64)):
-                #    # sometimes an eompty list is returned here which will break the remaining code so we make sure that id is an integer
-                #    break
-                # print("looping through aug_ids, curren id:" + str(id))
-                # print(str(i) + ": " + str(self.n_labelled))
-                i += 1
                 super().label(self._oracle_to_pool_index(id))
-                # print(str(i) + ": " + str(self.n_labelled))
-                i += 1
-            # print("augmenting source image" + str(oracle_idx))
-            super().label(int(oracle_idx))
-            # print(str(i) + ": " + str(self.n_labelled))
-            i += 1
+            super().label(self._oracle_to_pool_index(int(oracle_idx)))
 
     def label_just_this_id(self, idx):
         """
