@@ -43,7 +43,7 @@ Minimal example to use BaaL.
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epoch", default=100, type=int)
+    parser.add_argument("--epoch", default=3, type=int)
     parser.add_argument("--batch_size", default=32, type=int)
     parser.add_argument("--initial_pool", default=1000, type=int) # 1000, we will start training with only 1000(org)+1000(aug)=2000 labeled data samples out of the 50k (org) and
     parser.add_argument("--query_size", default=100, type=int)    # request 100(org)+100(aug)=200 new samples to be labeled at every cycle
@@ -272,6 +272,13 @@ def main():
                     original = uncertainty[0:orig_s2]
                     aug1 = uncertainty[aug1_s1:aug1_s2]
 
+                    if len(original) != len(aug1):
+                        # at least one list has a different length (take shorter and fill with 0 to match arrays equel length)
+                        if len(original) > len(aug1):
+                            aug1 += (len(original)-len(aug1)) * [0]
+                        else:
+                            original += (len(aug1)-len(original)) * [0]
+
                     matrix = np.vstack([original, aug1])
                 if hyperparams["augment"] == 2: 
                     orig_s2 = int((len(pool)/3)-1)
@@ -282,11 +289,26 @@ def main():
 
                     original = uncertainty[0:orig_s2]
                     aug1 = uncertainty[aug1_s1:aug1_s2]
-                    aug2 = uncertainty[aug2_s1:aug2_s2]  
+                    aug2 = uncertainty[aug2_s1:aug2_s2] 
                     print("3 original length "+str(len(original)))
                     print("4 aug1 length "+str(len(aug1)))
                     print("5 aug2 length "+str(len(aug2)))
 
+                    if len(original) != len(aug1) or len(original) != len(aug2) or len(aug1) != len(aug2):
+                        # at least one list has a different length (take shorter and fill with 0 to match arrays equel length)
+                        if len(original) > len(aug1):
+                            aug1 += (len(original)-len(aug1)) * [0]
+                        else:
+                            original += (len(aug1)-len(original)) * [0]
+                        if len(original) > len(aug2):
+                            aug2 += (len(original)-len(aug2)) * [0]
+                        else:
+                            original += (len(aug2)-len(original)) * [0]
+                        if len(aug1) > len(aug2):
+                            aug2 += (len(aug1)-len(aug2)) * [0]
+                        else:
+                            aug1 += (len(aug2)-len(aug1)) * [0]
+                        
                     matrix = np.vstack([original, aug1, aug2])
 
                 # 2. Calc standard deviation
