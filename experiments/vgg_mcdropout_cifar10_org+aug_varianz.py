@@ -8,7 +8,6 @@ from copy import deepcopy
 import csv
 import datetime
 import types
-import statistics 
 
 import pandas as pd
 import numpy as np
