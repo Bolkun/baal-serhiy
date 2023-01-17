@@ -165,7 +165,7 @@ def main():
 
     heuristic = get_heuristic(hyperparams["heuristic"], hyperparams["shuffle_prop"])
     criterion = CrossEntropyLoss()
-    model = vgg16(pretrained=False, num_classes=10)
+    model = vgg16(num_classes=10)
 
     # change dropout layer to MCDropout
     model = patch_module(model)
