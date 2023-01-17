@@ -204,7 +204,7 @@ def main():
         },
     }
 
-    writer = SummaryWriter("vgg_mcdropout_cifar10_org+aug_3")    # baal-serhiy/experiments/vgg_mcdropout_cifar10_org+aug_3
+    writer = SummaryWriter("vgg_mcdropout_cifar10_org+aug_mittelwert")    # baal-serhiy/experiments/vgg_mcdropout_cifar10_org+aug_mittelwert
     writer.add_custom_scalars(layout)
 
     for epoch in tqdm(range(args.epoch)):

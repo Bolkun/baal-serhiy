@@ -21,7 +21,7 @@ source lib.sh
 remove_new_environment pyjob_baal
 create_or_reuse_environment
 
-# experiments
+# experiments x3 for every run
 echo "Experiments"
 cd /home/sebo742e/baal-serhiy/experiments
 
