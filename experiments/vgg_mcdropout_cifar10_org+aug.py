@@ -168,6 +168,8 @@ def main():
         model.test_on_dataset(test_set, hyperparams["batch_size"], use_cuda)
         metrics = model.metrics
         should_continue = active_loop.step()
+        oracle_indices = 0
+        uncertainty = 0
 
         # last epoch calculate the uncertainty
         if ((epoch+1)-args.epoch) == 0:
