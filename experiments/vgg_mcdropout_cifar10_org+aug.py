@@ -28,19 +28,19 @@ from baal.utils.metrics import Accuracy
 
 import aug_lib
 
-from baal_extended.ExtendedActiveLearningDataset_2 import ExtendedActiveLearningDataset
+from baal_extended.ExtendedActiveLearningDataset import ExtendedActiveLearningDataset
 
 """
 Minimal example to use BaaL.
 # pip install baal
 # conda activate deepAugmentEnv
 # cd experiments
-# python vgg_mcdropout_cifar10_org+aug_2.py
+# python vgg_mcdropout_cifar10_org+aug.py
 """
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epoch", default=1, type=int)
+    parser.add_argument("--epoch", default=100, type=int)
     parser.add_argument("--batch_size", default=32, type=int)
     parser.add_argument("--initial_pool", default=1000, type=int) # we will start training with only 1000(org)+1000(aug)=2000 labeled data samples out of the 50k (org) and
     parser.add_argument("--query_size", default=100, type=int)    # request 100(org)+100(aug)=200 new samples to be labeled at every cycle
@@ -49,7 +49,7 @@ def parse_args():
     parser.add_argument("--iterations", default=20, type=int)     # 20 sampling for MC-Dropout to kick paths with low weights for optimization
     parser.add_argument("--shuffle_prop", default=0.05, type=float)
     parser.add_argument("--learning_epoch", default=20, type=int)
-    parser.add_argument("--augment", default=1, type=int)
+    parser.add_argument("--augment", default=2, type=int)
     return parser.parse_args()
 
 
@@ -150,7 +150,7 @@ def main():
         },
     }
 
-    writer = SummaryWriter("vgg_mcdropout_cifar10_org+aug_2")    # baal-serhiy/experiments/vgg_mcdropout_cifar10_org+aug_2
+    writer = SummaryWriter("vgg_mcdropout_cifar10_org+aug")    # baal-serhiy/experiments/vgg_mcdropout_cifar10_org+aug
     writer.add_custom_scalars(layout)
 
     for epoch in tqdm(range(args.epoch)):

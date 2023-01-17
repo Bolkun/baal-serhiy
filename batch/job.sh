@@ -26,16 +26,25 @@ echo "Experiments"
 cd /home/sebo742e/baal-serhiy/experiments
 
 echo "Start"
-# Example to use only cifar10 original data
-#python vgg_mcdropout_cifar10_original.py --epoch 100
-# Example to use cifar10 original + augmented data
-#python vgg_mcdropout_cifar10_augment.py --epoch 100
-# Example to use only cifar10 original + augmented data
-#python vgg_mcdropout_cifar10_org+aug_1.py --epoch 100
+# cifar10 original data
+python vgg_mcdropout_cifar10_original.py --epoch 50 --initial_pool 100 --learning_epoch 5
+#python vgg_mcdropout_cifar10_original.py --epoch 50 --initial_pool 100 --learning_epoch 5 --heuristic "entropy"
 
-# TO TEST
-#python vgg_mcdropout_cifar10_org+aug_2.py --epoch 1
+# cifar10 original + augmented data
+#python vgg_mcdropout_cifar10_org+aug.py --epoch 50 --initial_pool 100 --learning_epoch 5
+#python vgg_mcdropout_cifar10_org+aug.py --epoch 50 --initial_pool 100 --learning_epoch 5 --heuristic "entropy"
 
-# Aufgabe 4: Höchste Standardabweichung
-python vgg_mcdropout_cifar10_org+aug_3_hochste-standartabweichung.py --epoch 100
+# mittelwert (nicht trainierte model!)
+#python vgg_mcdropout_cifar10_org+aug_mittelwert.py --epoch 50 --initial_pool 100 --learning_epoch 5
+#python vgg_mcdropout_cifar10_org+aug_mittelwert.py --epoch 50 --initial_pool 100 --learning_epoch 5 --heuristic "entropy"
+
+# Standardabweichung (nicht trainierte model!)
+#python vgg_mcdropout_cifar10_org+aug_standartabweichung.py --epoch 50 --initial_pool 100 --learning_epoch 5
+#python vgg_mcdropout_cifar10_org+aug_standartabweichung.py --epoch 50 --initial_pool 100 --learning_epoch 5 --heuristic "entropy"
+
+# Varianz (nicht trainierte model!)
+#python vgg_mcdropout_cifar10_org+aug_varianz.py --epoch 50 --initial_pool 100 --learning_epoch 5
+#python vgg_mcdropout_cifar10_org+aug_varianz.py --epoch 50 --initial_pool 100 --learning_epoch 5 --heuristic "entropy"
+
+
 echo "End"
