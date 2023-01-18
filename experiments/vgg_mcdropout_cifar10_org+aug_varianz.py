@@ -243,7 +243,7 @@ def main():
             )
 
         # replacement for step
-        pool = active_set._dataset
+        pool = active_set.pool #active_set._dataset
         if len(pool) > 0:
             probs = model.predict_on_dataset(
                 pool,
@@ -332,7 +332,8 @@ def main():
                 oracle_indices = np.argsort(uncertainty) # aufsteigend
                 to_label = oracle_indices[::-1] # absteigend
                 if len(to_label) > 0:
-                    active_set.label2(to_label[: hyperparams.get("query_size", 1)])
+                    active_set.label(to_label[: hyperparams.get("query_size", 1)])
+                    #active_set.label2(to_label[: hyperparams.get("query_size", 1)])
                 else: break
             else:
                 break

@@ -243,7 +243,7 @@ def main():
             )
 
         # replacement for step
-        pool = active_set._dataset #active_set.pool
+        pool = active_set.pool #active_set._dataset
         if len(pool) > 0:
             probs = model.predict_on_dataset(
                 pool,
@@ -311,14 +311,14 @@ def main():
                 df_lab_img = pd.DataFrame(matrix)
                 std_array = df_lab_img.std()
 
-                # Save pickle file for every tenth epoch
+                # Save pickle file for last epoch
                 if (epoch+1) % 10 == 0:
                     pickle_dir_path, pickle_file_path = generate_pickle_file(dt_string, active_set, epoch, oracle_indices, std_array)
                     #mypickle = pd.read_pickle(pickle_file_path)
 
                 df_lab_img = pd.DataFrame(np.vstack([matrix, std_array]))
                 
-                # Save excel file for every tenth epoch
+                # Save excel for last epoch
                 if (epoch+1) % 10 == 0:
                     generate_excel_file(hyperparams["augment"], dt_string, active_set, epoch, pickle_dir_path, df_lab_img)
                 
@@ -332,8 +332,8 @@ def main():
                 oracle_indices = np.argsort(uncertainty) # aufsteigend
                 to_label = oracle_indices[::-1] # absteigend
                 if len(to_label) > 0:
-                    #active_set.label(to_label[: hyperparams.get("query_size", 1)])
-                    active_set.label2(to_label[: hyperparams.get("query_size", 1)])
+                    active_set.label(to_label[: hyperparams.get("query_size", 1)])
+                    #active_set.label2(to_label[: hyperparams.get("query_size", 1)])
                 else: break
             else:
                 break
