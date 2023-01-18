@@ -159,6 +159,47 @@ class ExtendedActiveLearningDataset(ActiveLearningDataset):
                 super().label(self._oracle_to_pool_index(id))
             super().label(self._oracle_to_pool_index(int(oracle_idx)))
 
+    def label2(self, index, value: Optional[Any] = None):
+        if isinstance(index, int):
+            # We were provided only the index, we make a list.
+            index_lst = [index]
+            value_lst: List[Any] = [value]
+        else:
+            index_lst = index
+            if value is None:
+                value_lst = [value]
+            else:
+                value_lst = value
+
+        if value_lst[0] is not None and len(index_lst) != len(value_lst):
+            raise ValueError(
+                "Expected `index` and `value` to be of same length when `value` is provided."
+                f"Got index={len(index_lst)} and value={len(value_lst)}"
+            )
+        indexes = self._pool_to_oracle_index(index_lst)
+        active_step = self.current_al_step + 1
+        for idx, val in zip_longest(indexes, value_lst, fillvalue=None):
+            if self.can_label and val is not None:
+                self._dataset.label2(idx, val)  # type: ignore
+                self.labelled_map[idx] = active_step
+            elif self.can_label and val is None:
+                raise ValueError(
+                    """The dataset is able to label data, but no label was provided.
+                                 If this is a research setting, please set the
+                                  `ActiveLearningDataset.can_label` to `False`.
+                                  """
+                )
+            else:
+                # Regular research usecase.
+                self.labelled_map[idx] = active_step
+                if val is not None:
+                    warnings.warn(
+                        "We will consider the original label of this datasample : {}, {}.".format(
+                            self._dataset[idx][0], self._dataset[idx][1]
+                        ),
+                        UserWarning,
+                    )
+
     def label_just_this_id(self, idx):
         """
         Can be used to label just the id provided and not the augmentations.

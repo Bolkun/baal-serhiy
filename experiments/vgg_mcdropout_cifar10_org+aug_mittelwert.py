@@ -243,7 +243,7 @@ def main():
             )
 
         # replacement for step
-        pool = active_set.pool
+        pool = active_set._dataset
         if len(pool) > 0:
             probs = model.predict_on_dataset(
                 pool,
@@ -256,11 +256,6 @@ def main():
                 # 1. Get uncertainty
                 uncertainty = active_loop.heuristic.get_uncertainties(probs)
                 oracle_indices = np.argsort(uncertainty)
-                
-                # Save pickle file for every tenth epoch
-                if (epoch+1) % 10 == 0:
-                    pickle_dir_path, pickle_file_path = generate_pickle_file(dt_string, active_set, epoch, oracle_indices, uncertainty)
-                    mypickle = pd.read_pickle(pickle_file_path)
 
                 if (hyperparams["augment"] != 1) and (hyperparams["augment"] != 2):
                     print("WARNING! Supporting only augmentation 1 and 2, for more write more code!")
@@ -315,6 +310,12 @@ def main():
                 # 2. Calc mean
                 df_lab_img = pd.DataFrame(matrix)
                 mean_array = df_lab_img.mean()
+
+                # Save pickle file for every tenth epoch
+                if (epoch+1) % 10 == 0:
+                    pickle_dir_path, pickle_file_path = generate_pickle_file(dt_string, active_set, epoch, oracle_indices, mean_array)
+                    #mypickle = pd.read_pickle(pickle_file_path)
+                
                 df_lab_img = pd.DataFrame(np.vstack([matrix, mean_array]))
                 
                 # Save excel file for every tenth epoch
@@ -331,7 +332,7 @@ def main():
                 oracle_indices = np.argsort(uncertainty) # aufsteigend
                 to_label = oracle_indices[::-1] # absteigend
                 if len(to_label) > 0:
-                    active_set.label(to_label[: hyperparams.get("query_size", 1)])
+                    active_set.label2(to_label[: hyperparams.get("query_size", 1)])
                 else: break
             else:
                 break
