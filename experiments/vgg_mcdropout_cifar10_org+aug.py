@@ -50,6 +50,7 @@ def parse_args():
     parser.add_argument("--shuffle_prop", default=0.05, type=float)
     parser.add_argument("--learning_epoch", default=20, type=int)
     parser.add_argument("--augment", default=2, type=int)
+    parser.add_argument("--pretrained", default=0, type=int) # model pretraned 0 is false, 1 true
     return parser.parse_args()
 
 
@@ -108,10 +109,14 @@ def main():
 
     heuristic = get_heuristic(hyperparams["heuristic"], hyperparams["shuffle_prop"])
     criterion = CrossEntropyLoss()
-    model = vgg16(pretrained=False, num_classes=10)
-    weights = load_state_dict_from_url("https://download.pytorch.org/models/vgg16-397923af.pth")
-    weights = {k: v for k, v in weights.items() if "classifier.6" not in k}
-    model.load_state_dict(weights, strict=False)
+
+    if (hyperparams["pretrained"] == 1):
+        model = vgg16(pretrained=True, num_classes=10) 
+        weights = load_state_dict_from_url("https://download.pytorch.org/models/vgg16-397923af.pth")
+        weights = {k: v for k, v in weights.items() if "classifier.6" not in k}
+        model.load_state_dict(weights, strict=False)
+    else:
+        model = vgg16(pretrained=False, num_classes=10) # nicht trainierte model
 
     # change dropout layer to MCDropout
     model = patch_module(model)
@@ -187,7 +192,7 @@ def main():
             # current dateTime
             now = datetime.now()
             # convert to string
-            date_time_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+            date_time_str = now.strftime("org+aug_%Y-%m-%d_%H-%M-%S")
             uncertainty_filename = date_time_str + (
                 f"_uncertainty_epoch={epoch}" f"_labelled={len(active_set)}.pkl"
             )

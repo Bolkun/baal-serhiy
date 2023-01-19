@@ -16,7 +16,7 @@
 module --force purge                          				
 module load modenv/hiera CUDA/11.7.0 GCCcore/11.3.0 Python/3.10.4
 
-source lib_var.sh
+source lib_org+aug.sh
 
 #remove_new_environment pyjob_baal
 create_or_reuse_environment
@@ -27,10 +27,10 @@ cd /home/sebo742e/baal-serhiy/experiments
 
 echo "Start"
 
-# Varianz (nicht trainierte model!)
-#python vgg_mcdropout_cifar10_org+aug_varianz.py --epoch 50 --initial_pool 100 --learning_epoch 5
-#python vgg_mcdropout_cifar10_org+aug_varianz.py --epoch 50 --initial_pool 100 --learning_epoch 5 --heuristic "entropy"
-python vgg_mcdropout_cifar10_org+aug_varianz.py --epoch 50 --initial_pool 100 --learning_epoch 5 --pretrained 1
+# cifar10 original + augmented data
+#python vgg_mcdropout_cifar10_org+aug.py --epoch 50 --initial_pool 100 --learning_epoch 5
+#python vgg_mcdropout_cifar10_org+aug.py --epoch 50 --initial_pool 100 --learning_epoch 5 --heuristic "entropy"
+python vgg_mcdropout_cifar10_org+aug.py --epoch 50 --initial_pool 100 --learning_epoch 5 --pretrained 1
 
 
 echo "End"
