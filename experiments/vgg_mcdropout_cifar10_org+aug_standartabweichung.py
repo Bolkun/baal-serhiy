@@ -168,7 +168,7 @@ def main():
     criterion = CrossEntropyLoss()
     
     if (hyperparams["pretrained"] == 1):
-        model = vgg16(pretrained=True, num_classes=10) 
+        model = vgg16(num_classes=10) 
         weights = load_state_dict_from_url("https://download.pytorch.org/models/vgg16-397923af.pth")
         weights = {k: v for k, v in weights.items() if "classifier.6" not in k}
         model.load_state_dict(weights, strict=False)
