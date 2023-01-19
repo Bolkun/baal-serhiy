@@ -142,8 +142,8 @@ def main():
         print("warning, the experiments would take ages to run on cpu")
 
     now = datetime.datetime.now()
-    dt_string = now.strftime("%d_%m_%Y_%Hx%M")
-    csv_filename = "uncertainties/metrics_cifarnet_" + dt_string + "_.csv"
+    dt_string = now.strftime("mean_%d_%m_%Y_%Hx%M")
+    csv_filename = "uncertainties/mean_metrics_cifarnet_" + dt_string + "_.csv"
     with open(csv_filename, "w+", newline="") as out_file:
       csvwriter = csv.writer(out_file)
       csvwriter.writerow(
