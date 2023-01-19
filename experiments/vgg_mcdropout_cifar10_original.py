@@ -22,6 +22,10 @@ from baal.utils.metrics import Accuracy
 
 """
 Minimal example to use BaaL.
+# pip install baal
+# conda activate deepAugmentEnv
+# cd experiments
+# python vgg_mcdropout_cifar10_original.py 
 """
 
 
