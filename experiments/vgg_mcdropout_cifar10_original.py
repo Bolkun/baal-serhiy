@@ -1,8 +1,14 @@
+import pickle
+import os
+import sys #sys.exit()
 import argparse
 from pprint import pprint
 import random
 from copy import deepcopy
+from datetime import datetime
 
+import pandas as pd
+import numpy as np
 import torch
 import torch.backends
 from torch import optim
@@ -154,6 +160,66 @@ def main():
         model.test_on_dataset(test_set, hyperparams["batch_size"], use_cuda)
         metrics = model.metrics
         should_continue = active_loop.step()
+        oracle_indices = 0
+        uncertainty = 0
+
+        # last epoch calculate the uncertainty
+        if ((epoch+1)-args.epoch) == 0:
+            print(str(epoch) + " out of " + str(args.epoch))
+            predictions = model.predict_on_dataset(
+                active_set._dataset,
+                batch_size=hyperparams["batch_size"],
+                iterations=hyperparams["iterations"],
+                use_cuda=use_cuda,
+            )
+            uncertainty = active_loop.heuristic.get_uncertainties(predictions)
+            # save uncertainty and label map to pkl
+            oracle_indices = np.argsort(uncertainty)
+            active_set.labelled_map
+            # current dateTime
+            now = datetime.now()
+            # convert to string
+            date_time_str = now.strftime("org_%Y-%m-%d_%H-%M-%S")
+            uncertainty_filename = date_time_str + (
+                f"_uncertainty_epoch={epoch}" f"_labelled={len(active_set)}.pkl"
+            )
+            newPath = os.path.join(os.getcwd(), "uncertainties")
+            isExist = os.path.exists("uncertainties")
+            if not isExist:
+                os.makedirs(newPath)
+            uncertainty_path = os.path.join(newPath, uncertainty_filename)
+            print("Saving file " + uncertainty_path)
+            pickle.dump(
+                {
+                    "oracle_indices": oracle_indices,
+                    "uncertainty": uncertainty,
+                    "labelled_map": active_set.labelled_map,
+                },
+                open(uncertainty_path, "wb")
+            )
+            # generate excel file
+            mypickle = pd.read_pickle(uncertainty_path)
+            excel_filename = date_time_str + (
+                f"_uncertainty_epoch={epoch}" f"_labelled={len(active_set)}.xlsx"
+            )
+            excel_path = os.path.join(newPath, excel_filename)
+
+            uncertainty = mypickle['uncertainty']
+            oracle_indices = mypickle['oracle_indices']
+            labelled_map = mypickle['labelled_map']
+
+            uncertainty_length = len(uncertainty)
+
+            original = uncertainty[0:50000-1]
+
+            matrix = np.vstack([original])
+
+            df_lab_img = pd.DataFrame(matrix)
+
+            uncertainties_std = df_lab_img.transpose()
+            uncertainties_std.columns = ['original']
+            uncertainties_std.to_excel(excel_path)
+
         if not should_continue:
             break
 
@@ -172,7 +238,10 @@ def main():
             "train_loss": train_loss,
             "test_loss": test_loss,
             #"labeled_data": active_set.labelled_map,
-            "amount_labeled_data/next Training set size": active_set.n_labelled # == "Next Training set size": len(active_set),
+            "oracle_indices": oracle_indices,           # array([ 54130, 109117,   8053, ..., 146481,  32710,  16780])
+            "uncertainty": uncertainty,                 # array([0.1608387 , 0.00041478, 0.00027927, ..., 0.01162097, 0.04465848, 0.00282653], dtype=float32)}
+            "labelled_map": active_set.labelled_map,    # array([0, 0, 0, ..., 0, 0, 0]),
+            "Next Training set size": len(active_set),
         }
 
         pprint(logs)
@@ -181,6 +250,7 @@ def main():
         writer.add_scalar("loss/test", test_loss, epoch)
         writer.add_scalar("accuracy/train", train_accuracy, epoch)
         writer.add_scalar("accuracy/test", test_accuracy, epoch)
+        #writer.add_scalar("uncertainty", uncertainty, epoch)
     writer.close()
 
 
