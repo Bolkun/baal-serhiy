@@ -5,7 +5,9 @@ import argparse
 from pprint import pprint
 import random
 from copy import deepcopy
-from datetime import datetime
+import csv
+import datetime
+import types
 
 import pandas as pd
 import numpy as np
@@ -25,6 +27,8 @@ from baal.active.active_loop import ActiveLearningLoop
 from baal.bayesian.dropout import patch_module
 from baal.modelwrapper import ModelWrapper
 from baal.utils.metrics import Accuracy
+from baal.active.heuristics import BALD
+from baal.active.heuristics import Entropy
 
 import aug_lib
 
@@ -103,6 +107,22 @@ def main():
     if not use_cuda:
         print("warning, the experiments would take ages to run on cpu")
 
+    now = datetime.datetime.now()
+    dt_string = now.strftime("%d_%m_%Y_%Hx%M")
+    csv_filename = "uncertainties/org+aug_metrics_cifarnet_" + dt_string + "_.csv"
+    with open(csv_filename, "w+", newline="") as out_file:
+      csvwriter = csv.writer(out_file)
+      csvwriter.writerow(
+        (
+          "epoch",
+          "test_acc",
+          "train_acc",
+          "test_loss",
+          "train_loss",
+          "Next training size",
+        )
+      )
+
     hyperparams = vars(args)
 
     active_set, test_set = get_datasets(hyperparams["initial_pool"], hyperparams["augment"])
@@ -175,6 +195,22 @@ def main():
         # Validation!
         model.test_on_dataset(test_set, hyperparams["batch_size"], use_cuda)
         metrics = model.metrics
+
+        # get origin amount of labelled augmented/unaugmented images
+        if(epoch == 0):
+          with open(csv_filename, "a+", newline="") as out_file:
+            csvwriter = csv.writer(out_file)
+            csvwriter.writerow(
+              (
+                -1,
+                0,
+                0,
+                0,
+                0,
+                active_set.n_labelled,
+              )
+            )
+
         should_continue = active_loop.step()
         oracle_indices = 0
         uncertainty = 0
@@ -192,8 +228,6 @@ def main():
             # save uncertainty and label map to pkl
             oracle_indices = np.argsort(uncertainty)
             active_set.labelled_map
-            # current dateTime
-            now = datetime.now()
             # convert to string
             date_time_str = now.strftime("org+aug_%Y-%m-%d_%H-%M-%S")
             uncertainty_filename = date_time_str + (
@@ -271,6 +305,19 @@ def main():
         }
 
         pprint(logs)
+
+        with open(csv_filename, "a+", newline="") as out_file:
+            csvwriter = csv.writer(out_file)
+            csvwriter.writerow(
+                (
+                epoch,
+                test_accuracy,
+                train_accuracy,
+                test_loss,
+                train_loss,
+                active_set.n_labelled,
+                )
+            )
 
         writer.add_scalar("loss/train", train_loss, epoch)
         writer.add_scalar("loss/test", test_loss, epoch)
